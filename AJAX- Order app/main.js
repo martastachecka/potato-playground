@@ -5,22 +5,30 @@ $(function () {
     var $orders = $('#orders');
     var $name = $('#name');
     var $drink = $('#drink');
-    function addOrder(order){
-        $orders.append('<li>name:' + order.name + ' , drink:' + order.drink + '</li>');
+    var orderTemplate = "" +
+        "<li>" +
+        "<p><strong>Name:</strong>{{name}}</p>" +
+        "<p><strong>Drink:</strong>{{drink}}</p>" +
+        "<button data-id='{{id}}' class='remove'>X</button>" +
+        "</li>";
+
+    function addOrder(order) {
+        $orders.append(Mustache.render(orderTemplate, order));
     }
+
     $.ajax({
         type: 'GET',
         url: 'http://rest.learncode.academy/api/marta/friends',
         success: function (orders) {
             $.each(orders, function (i, order) {
-               addOrder(order);
+                addOrder(order);
             });
         },
         error: function () {
             alert('error loading orders');
         }
     });
-    $('#add-order').on('click', function() {
+    $('#add-order').on('click', function () {
         var order = {
             name: $name.val(),
             drink: $drink.val()
@@ -37,4 +45,18 @@ $(function () {
             }
         });
     });
+
+    $orders.delegate('.remove', 'click', function() {
+        var $li = $(this).closest('li');
+        $.ajax({
+            type: 'DELETE',
+            url: 'http://rest.learncode.academy/api/marta/friends'+ $(this).attr('data-id'),
+            success: function () {
+                $li.fadeOut(300, function () {
+                    $(this).remove();
+                });
+            }
+        });
+    });
 });
+
